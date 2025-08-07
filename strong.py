@@ -1,95 +1,177 @@
+"""
+strong.py
+
+Advanced Password Strength Utility for Z+ Password Manager
+---------------------------------------------------------
+- Secure password generation using cryptographically safe randomness.
+- Interactive password strength testing with detailed feedback.
+- Professional CLI experience, input masking, and clear code structure.
+
+Author: shahrukh-1052
+Repo: https://github.com/shahrukh-1052/PASSWORD_MANAGER
+
+"""
+
 import string
-import random
+import secrets
+import sys
+from getpass import getpass
+from typing import List, Tuple
 
-def generate_password():
-    ssp = '@#$?%&*!'
-    dgt = random.randint(1000, 9999)
-    ult = ''.join(random.choices(string.ascii_uppercase, k=3))
-    spl = ''.join(random.choices(ssp, k=2))
-    llt = ''.join(random.choices(string.ascii_lowercase, k=3))
-    lst = list(str(dgt) + ult + llt + spl)
-    random.shuffle(lst)
-    rst = ''.join(lst)
-    return rst
 
-def chk_pwd_strength():
+# Constants for password requirements
+MIN_LENGTH = 12
+MIN_DIGITS = 4
+MIN_UPPERCASE = 3
+MIN_LOWERCASE = 3
+MIN_SPECIAL = 2
+SPECIAL_CHARACTERS = '@#$?%&*!'
+
+
+def generate_password(length: int = MIN_LENGTH) -> str:
+    """
+    Generates a strong password meeting all security criteria.
+    """
+    if length < MIN_LENGTH:
+        raise ValueError(f"Password length must be at least {MIN_LENGTH} characters.")
+
     while True:
-        pc = '@#$?%&*!'
-        upd = input("Enter Your Password: ")
-        issues = []
-        if len(upd) < 12:
-            issues.append("First, your password must be at least 12 characters.")
-        if sum(x.isdigit() for x in upd) < 4:
-            issues.append("Your password must contain at least 4 numerics.")
-        if sum(x.isupper() for x in upd) < 3:
-            issues.append("Your password must contain at least 3 uppercase letters.")
-        if sum(x.islower() for x in upd) < 3:
-            issues.append("Your password must contain at least 3 lowercase letters.")
-        if sum(x in pc for x in upd) < 2:
-            issues.append("Your password must contain at least 2 special characters.")
+        # Ensure minimum requirements
+        password_chars = (
+            [secrets.choice(string.digits) for _ in range(MIN_DIGITS)] +
+            [secrets.choice(string.ascii_uppercase) for _ in range(MIN_UPPERCASE)] +
+            [secrets.choice(string.ascii_lowercase) for _ in range(MIN_LOWERCASE)] +
+            [secrets.choice(SPECIAL_CHARACTERS) for _ in range(MIN_SPECIAL)]
+        )
+        # Fill the rest of the password length with random choices
+        all_chars = string.ascii_letters + string.digits + SPECIAL_CHARACTERS
+        password_chars += [secrets.choice(all_chars) for _ in range(length - len(password_chars))]
+        secrets.SystemRandom().shuffle(password_chars)
+        password = ''.join(password_chars)
+        if check_password_strength(password)[0]:
+            return password
 
-        if issues:
-            print("Your password doesn't meet the following conditions:")
-            for zx in issues:
-                print(f"{zx}")
-            
-            while True:
-                print("Enter '1' to try again.")
-                print("Enter '2' to read the instructions for strong password generation.")
-                print("Enter '3' to get a generated strong password.")
-                print("Enter '4' to go to the main menu.")
-                qw = int(input("Enter your choice: "))
-                if qw == 1:
-                    print("Please try again.")
-                    break  # Breaks out of the inner while loop to try again
-                elif qw == 2:
-                    pwd_gdlns()
-                elif qw == 3:
-                    print("\nYour New Password Generated Successfully: ")
-                    print(generate_password())
-                elif qw == 4:
-                    return
-                else:
-                    print("Invalid choice! Please enter a valid option.")
-        else:
-            print("Your password is strong enough.")
-            break  # Breaks out of the outer while loop
 
-def pwd_gdlns():
-    print("\nGuidelines for Creating a Strong Password:")
-    print("1. Your password must be at least 12 characters long to ensure sufficient complexity.")
-    print("2. It should contain at least 4 numeric digits to add variety and make it harder to guess.")
-    print("3. Include at least 2 special characters (e.g., @, #, $, %, ?, &, *, !) to increase its strength.")
-    print("4. Your password must contain at least 3 uppercase letters to add diversity.")
-    print("5. Include at least 3 lowercase letters to balance your password's composition.")
-    print("6. Avoid using any personal names (e.g., your name, family names, or commonly used names) to prevent easy guesses.")
-    print("7. Do not use common keyboard patterns or sequences like 'abcdef', 'qwerty', 'asdfgh', 'zxcvbn', or similar.")
-    print("\nAdditional Tips:")
-    print("- Avoid using easily identifiable personal data, such as birthdays or phone numbers.")
-    print("- Mix and match letters, numbers, and symbols in unpredictable ways to create a unique password.")
-    print("- Test your password to ensure it meets all the criteria and is strong enough.")
+def check_password_strength(password: str) -> Tuple[bool, List[str]]:
+    """
+    Checks the strength of the provided password.
+    Returns (is_strong, issues)
+    """
+    issues = []
+    if len(password) < MIN_LENGTH:
+        issues.append(f"Password must be at least {MIN_LENGTH} characters.")
+    if sum(c.isdigit() for c in password) < MIN_DIGITS:
+        issues.append(f"Password must contain at least {MIN_DIGITS} digits.")
+    if sum(c.isupper() for c in password) < MIN_UPPERCASE:
+        issues.append(f"Password must contain at least {MIN_UPPERCASE} uppercase letters.")
+    if sum(c.islower() for c in password) < MIN_LOWERCASE:
+        issues.append(f"Password must contain at least {MIN_LOWERCASE} lowercase letters.")
+    if sum(c in SPECIAL_CHARACTERS for c in password) < MIN_SPECIAL:
+        issues.append(f"Password must contain at least {MIN_SPECIAL} special characters ({SPECIAL_CHARACTERS}).")
+    # Advanced checks
+    common_patterns = ['abcdef', 'qwerty', 'asdfgh', 'zxcvbn',
+                       'password', '123456', 'letmein', 'welcome']
+    for pattern in common_patterns:
+        if pattern in password.lower():
+            issues.append("Password should not contain common sequences or patterns.")
+            break
+    # Add more checks (e.g., personal info) if needed
+    return (len(issues) == 0, issues)
 
-def main_menu():
+
+def guidelines() -> None:
+    """
+    Prints professional guidelines for creating a strong password.
+    """
+    print("\n\033[1mZ+ Password Manager: Guidelines for a Strong Password\033[0m")
+    print("-" * 60)
+    print(f"1. Minimum length: {MIN_LENGTH} characters")
+    print(f"2. At least {MIN_DIGITS} digits")
+    print(f"3. At least {MIN_UPPERCASE} uppercase letters")
+    print(f"4. At least {MIN_LOWERCASE} lowercase letters")
+    print(f"5. At least {MIN_SPECIAL} special characters ({SPECIAL_CHARACTERS})")
+    print("6. Avoid personal names, common words, or patterns (e.g., 'qwerty').")
+    print("7. Do not use easily guessable info (birthdays, phone numbers, etc.)")
+    print("\nTips: Mix all character types and avoid any repetition or predictability.\n")
+
+
+def get_masked_password(prompt: str = "Enter your password: ") -> str:
+    """
+    Securely get a password input from the user (input is masked).
+    """
+    return getpass(prompt)
+
+
+def password_strength_cli() -> None:
+    """
+    CLI interaction for password strength checking with detailed reporting.
+    """
     while True:
-        print("\nEnter '1' to get guidelines for creating a strong password.")
-        print("Enter '2' to generate a new password.")
-        print("Enter '3' to test your password strength.")
-        print("Enter '4' to exit.")
-        n = int(input("Enter your choice: "))
-
-        if n == 1:
-            pwd_gdlns()
-        elif n == 2:
-            print("\nYour New Password Generated Successfully: ")
-            print(generate_password())
-        elif n == 3:
-            chk_pwd_strength()
-        elif n == 4:
-            print("Exiting... Goodbye.")
+        print("\n\033[1mPassword Strength Checker\033[0m")
+        password = get_masked_password()
+        is_strong, issues = check_password_strength(password)
+        if is_strong:
+            print("\033[92mYour password is strong! Great job!\033[0m")
             break
         else:
-            print("You have entered the wrong choice! Choose your choice from the above options only.")
+            print("\n\033[91mYour password has the following issues:\033[0m")
+            for i, issue in enumerate(issues, 1):
+                print(f"{i}. {issue}")
+            print("\nOptions:")
+            print("  1. Try again")
+            print("  2. View guidelines")
+            print("  3. Get a suggested strong password")
+            print("  4. Return to main menu")
+            try:
+                choice = int(input("Enter your choice: "))
+            except ValueError:
+                print("Invalid input. Please enter a number.")
+                continue
+
+            if choice == 1:
+                continue
+            elif choice == 2:
+                guidelines()
+            elif choice == 3:
+                print("\n\033[94mSuggested strong password:\033[0m")
+                print(generate_password())
+            elif choice == 4:
+                break
+            else:
+                print("Invalid choice. Please select a valid option.")
+
+
+def main_menu() -> None:
+    """
+    Main CLI menu for interacting with the password manager.
+    """
+    print("\n\033[1mWelcome to Z+ Password Manager: Advanced Password Utility\033[0m")
+    print("Safeguard your digital world with industry-standard security.\n")
+    while True:
+        print("\nMain Menu:")
+        print("  1. View password guidelines")
+        print("  2. Generate a strong password")
+        print("  3. Test your password strength")
+        print("  4. Exit")
+        try:
+            n = int(input("Enter your choice: "))
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+            continue
+
+        if n == 1:
+            guidelines()
+        elif n == 2:
+            print("\n\033[94mGenerated strong password:\033[0m")
+            print(generate_password())
+        elif n == 3:
+            password_strength_cli()
+        elif n == 4:
+            print("Thank you for using Z+ Password Manager. Stay secure!")
+            sys.exit(0)
+        else:
+            print("Invalid choice! Please select from the above options.")
+
 
 if __name__ == "__main__":
     main_menu()
-
