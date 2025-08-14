@@ -1,5 +1,4 @@
 """
-strong.py
 
 Advanced Password Strength Utility for Z+ Password Manager
 ---------------------------------------------------------
@@ -7,8 +6,6 @@ Advanced Password Strength Utility for Z+ Password Manager
 - Interactive password strength testing with detailed feedback.
 - Professional CLI experience, input masking, and clear code structure.
 
-Author: shahrukh-1052
-Repo: https://github.com/shahrukh-1052/PASSWORD_MANAGER
 
 """
 
