@@ -1,22 +1,9 @@
-"""
-
-Advanced Password Strength Utility for Z+ Password Manager
----------------------------------------------------------
-- Secure password generation using cryptographically safe randomness.
-- Interactive password strength testing with detailed feedback.
-- Professional CLI experience, input masking, and clear code structure.
-
-
-"""
-
 import string
 import secrets
 import sys
 from getpass import getpass
 from typing import List, Tuple
 
-
-# Constants for password requirements
 MIN_LENGTH = 12
 MIN_DIGITS = 4
 MIN_UPPERCASE = 3
@@ -24,23 +11,16 @@ MIN_LOWERCASE = 3
 MIN_SPECIAL = 2
 SPECIAL_CHARACTERS = '@#$?%&*!'
 
-
 def generate_password(length: int = MIN_LENGTH) -> str:
-    """
-    Generates a strong password meeting all security criteria.
-    """
     if length < MIN_LENGTH:
         raise ValueError(f"Password length must be at least {MIN_LENGTH} characters.")
-
     while True:
-        # Ensure minimum requirements
         password_chars = (
             [secrets.choice(string.digits) for _ in range(MIN_DIGITS)] +
             [secrets.choice(string.ascii_uppercase) for _ in range(MIN_UPPERCASE)] +
             [secrets.choice(string.ascii_lowercase) for _ in range(MIN_LOWERCASE)] +
             [secrets.choice(SPECIAL_CHARACTERS) for _ in range(MIN_SPECIAL)]
         )
-        # Fill the rest of the password length with random choices
         all_chars = string.ascii_letters + string.digits + SPECIAL_CHARACTERS
         password_chars += [secrets.choice(all_chars) for _ in range(length - len(password_chars))]
         secrets.SystemRandom().shuffle(password_chars)
@@ -48,12 +28,7 @@ def generate_password(length: int = MIN_LENGTH) -> str:
         if check_password_strength(password)[0]:
             return password
 
-
 def check_password_strength(password: str) -> Tuple[bool, List[str]]:
-    """
-    Checks the strength of the provided password.
-    Returns (is_strong, issues)
-    """
     issues = []
     if len(password) < MIN_LENGTH:
         issues.append(f"Password must be at least {MIN_LENGTH} characters.")
@@ -65,21 +40,14 @@ def check_password_strength(password: str) -> Tuple[bool, List[str]]:
         issues.append(f"Password must contain at least {MIN_LOWERCASE} lowercase letters.")
     if sum(c in SPECIAL_CHARACTERS for c in password) < MIN_SPECIAL:
         issues.append(f"Password must contain at least {MIN_SPECIAL} special characters ({SPECIAL_CHARACTERS}).")
-    # Advanced checks
-    common_patterns = ['abcdef', 'qwerty', 'asdfgh', 'zxcvbn',
-                       'password', '123456', 'letmein', 'welcome']
+    common_patterns = ['abcdef', 'qwerty', 'asdfgh', 'zxcvbn', 'password', '123456', 'letmein', 'welcome']
     for pattern in common_patterns:
         if pattern in password.lower():
             issues.append("Password should not contain common sequences or patterns.")
             break
-    # Add more checks (e.g., personal info) if needed
     return (len(issues) == 0, issues)
 
-
 def guidelines() -> None:
-    """
-    Prints professional guidelines for creating a strong password.
-    """
     print("\n\033[1mZ+ Password Manager: Guidelines for a Strong Password\033[0m")
     print("-" * 60)
     print(f"1. Minimum length: {MIN_LENGTH} characters")
@@ -91,18 +59,10 @@ def guidelines() -> None:
     print("7. Do not use easily guessable info (birthdays, phone numbers, etc.)")
     print("\nTips: Mix all character types and avoid any repetition or predictability.\n")
 
-
 def get_masked_password(prompt: str = "Enter your password: ") -> str:
-    """
-    Securely get a password input from the user (input is masked).
-    """
     return getpass(prompt)
 
-
 def password_strength_cli() -> None:
-    """
-    CLI interaction for password strength checking with detailed reporting.
-    """
     while True:
         print("\n\033[1mPassword Strength Checker\033[0m")
         password = get_masked_password()
@@ -124,7 +84,6 @@ def password_strength_cli() -> None:
             except ValueError:
                 print("Invalid input. Please enter a number.")
                 continue
-
             if choice == 1:
                 continue
             elif choice == 2:
@@ -137,11 +96,7 @@ def password_strength_cli() -> None:
             else:
                 print("Invalid choice. Please select a valid option.")
 
-
 def main_menu() -> None:
-    """
-    Main CLI menu for interacting with the password manager.
-    """
     print("\n\033[1mWelcome to Z+ Password Manager: Advanced Password Utility\033[0m")
     print("Safeguard your digital world with industry-standard security.\n")
     while True:
@@ -155,7 +110,6 @@ def main_menu() -> None:
         except ValueError:
             print("Invalid input. Please enter a number.")
             continue
-
         if n == 1:
             guidelines()
         elif n == 2:
@@ -168,7 +122,6 @@ def main_menu() -> None:
             sys.exit(0)
         else:
             print("Invalid choice! Please select from the above options.")
-
 
 if __name__ == "__main__":
     main_menu()
